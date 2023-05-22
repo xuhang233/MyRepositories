@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.reggie.mapper.SetmealMapper">
+
+
+    <!--套餐管理,分页查询-->
+    <select id="pageWithSetmealDto" resultType="com.itheima.reggie.dto.SetmealDto">
+        select s.*,c.name categoryName
+        from setmeal s,
+        category c
+        where s.category_id = c.id
+        <if test="name!=null and name!=''">
+            and s.name like concat('%',#{name},'%')
+        </if>
+    </select>
+
+
+    <!-- //修改套餐,显示数据-->
+    <select id="selectWithDtoId" resultMap="SetmealDtoResultMap">
+        select s.*,
+               sd.id            df_id,
+               sd.name          df_name,
+               sd.setmeal_id    id,
+               sd.price         df_price,
+               sd.copies        df_copies,
+               sd.dish_id       df_dish_id
+        from setmeal s
+                 left join setmeal_dish sd on s.id = sd.setmeal_id
+        where s.id = #{id}
+    </select>
+
+    <!--菜品口味结果映射-->
+    <resultMap id="SetmealDtoResultMap" type="com.itheima.reggie.dto.SetmealDto" autoMapping="true">
+        <result property="id" column="id"></result>
+        <!--一对多映射-->
+        <collection property="setmealDishes" ofType="com.itheima.reggie.pojo.SetmealDish">
+            <result column="df_id" property="id" ></result>
+            <result column="df_dish_id" property="dishId"></result>
+            <result column="id" property="setmealId" ></result>
+            <result column="df_name" property="name"></result>
+            <result column="df_price" property="price"></result>
+            <result column="df_copies" property="copies"></result>
+        </collection>
+    </resultMap>
+</mapper>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.reggie.mapper.DishMapper">
+
+
+    <!--分页查询,菜品管理以及菜品名称-->
+    <select id="pageDishDto" resultType="com.itheima.reggie.dto.DishDto">
+        select d.*,c.name categoryName
+        from dish d,
+             category c
+        where d.category_id = c.id
+            <if test="name!=null and name!=''">
+                and d.name like concat('%',#{name},'%')
+            </if>
+    </select>
+
+    <!--根据id查询菜品数据-->
+    <select id="getByDishId" resultMap="dishDtoResultMap">
+        select d.*,
+               df.id        df_id,
+               df.name      df_name,
+               df.value     df_value,
+               df.dish_id 	df_dish_id
+        from dish d
+                 left join dish_flavor df on d.id = df.dish_id
+        where d.id = #{id}
+    </select>
+
+    <!--菜品口味结果映射-->
+    <resultMap id="dishDtoResultMap" type="com.itheima.reggie.dto.DishDto" autoMapping="true">
+        <result property="id" column="id"></result>
+        <!--一对多映射-->
+        <collection property="flavors" ofType="com.itheima.reggie.pojo.DishFlavor" autoMapping="true">
+            <result property="id" column="df_id"/>
+            <result property="dishId" column="df_dish_id"/>
+            <result property="name" column="df_name"/>
+            <result property="value" column="df_value"/>
+        </collection>
+    </resultMap>
+
+    <!--根据分类查询菜品列表(包含口味数据)-->
+    <select id="ListDishDto" resultMap="dishDtoResultMap">
+        select d.*,
+               df.id        df_id,
+               df.name      df_name,
+               df.value     df_value
+        from dish d
+                 left join dish_flavor df on d.id = df.dish_id
+            <where>
+                d.status = 1
+                <if test="categoryId!= null">
+                    and d.category_id=#{categoryId}
+                </if>
+                <if test="name!= null and name !=''">
+                    and d.name like concat('%',#{name},'%')
+                </if>
+            </where>
+    </select>
+
+    <!--//根据id查询套餐相对应的菜品信息-->
+    <select id="getDishBySetmealId" resultType="com.itheima.reggie.dto.DishDto">
+        select *
+        from dish d,
+             setmeal_dish sd
+        where d.id = sd.dish_id
+          and sd.setmeal_id = #{setmealId}
+    </select>
+</mapper>
